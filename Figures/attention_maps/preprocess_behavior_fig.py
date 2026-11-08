@@ -8,7 +8,7 @@ import os
 import matplotlib.pyplot as plt
 from PIL import Image
 
-only_crop = True
+only_crop = False
 
 face_labels = ['m_hap', 'f_hap',
                'm_sad', 'f_sad',
@@ -16,7 +16,8 @@ face_labels = ['m_hap', 'f_hap',
                'm_fea', 'f_fea',
                'm_dis', 'f_dis',
                'm_sup', 'f_sup',
-               'm_ntr', 'f_ntr']
+               'm_ntr', 'f_ntr',
+               'color_bar']
 
 crop_tops = {'01F_AN_O': 82,
              '01F_DI_O': 82,
@@ -76,7 +77,8 @@ def save_split_panels(image_pth, boxes, save_pth):
     for i, box in enumerate(boxes):
         face = crop_panel_face(image_bgr, box)
         lbl = face_labels[i]
-        plt.imsave(os.path.join(save_pth, f'{lbl}.png'), cv2.cvtColor(face, cv2.COLOR_BGR2RGB))
+        if not os.path.isfile(os.path.join(save_pth, f'{lbl}.png')):
+            plt.imsave(os.path.join(save_pth, f'{lbl}.png'), cv2.cvtColor(face, cv2.COLOR_BGR2RGB))
 
 
 def crop_and_resize(input_path: str, save_pth: str, center: bool = False, top: int = 0, size: int = 224) -> None:
@@ -149,6 +151,7 @@ if __name__ == "__main__":
                 crop_and_resize(image_pth, save_pth, top=crop_tops[im])
     else:
         save_pth = 'bhvr_fig_split'
-        image_pth = os.path.join(home_dir, "data/S10Code/mappingTheEmotionalFace-master/figures/mainWeightPlot.png")
+        # image_pth = os.path.join(home_dir, "data/S10Code/mappingTheEmotionalFace-master/figures/mainWeightPlot.png")  # only overlayed maps (from paper's data dir)
+        image_pth = os.path.join(home_dir, "code/PaperStuff/Figures/attention_maps/figs_from_bhvr_paper/fig4_weights_with_colorbar.png")  # also with color bar (downloaded from the paper).
         boxes = detect_panels(image_pth)
         save_split_panels(image_pth, boxes, save_pth)

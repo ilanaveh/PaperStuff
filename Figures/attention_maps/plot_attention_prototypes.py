@@ -18,10 +18,13 @@ POOLING = True
 prototype_config = 'pred_label_all'  # 'true_label_correct' / 'pred_label_all'
 
 home_dir = Path("/home/projects/bagon/ilanaveh")
-models = ['RAF_blur8_pretrained0-8_freeze_fix_projs', 'RAF_blur8_freeze']
+# models = ['RAF_blur8_pretrained0-8_freeze_fix_projs', 'RAF_blur8_freeze']
+models = ['RAF_blur8_pretrained0-8_freeze_fix_projs', 'RAF_blur8_freeze', 'RAF_blur0_pretrained0-8_freeze', 'RAF_blur0_freeze']
 mdl_lables = {
-    'RAF_blur8_pretrained0-8_freeze_fix_projs': 'Mixed-High',
-    'RAF_blur8_freeze': 'Low'
+    'RAF_blur0_freeze': 'High-S0',
+    'RAF_blur0_pretrained0-8_freeze': 'Mixed-High-S0',
+    'RAF_blur8_pretrained0-8_freeze_fix_projs': 'Mixed-High-S8',
+    'RAF_blur8_freeze': 'Low-S8',
 }
 # EMOTIONS = ['Happy', 'Sad', 'Angry', 'Fear', 'Disgust', 'Surprise', 'Neutral']
 # EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
@@ -43,7 +46,7 @@ min_alpha = .3
 max_alpha = .65
 genders = ['f']  # choose from ['f', 'm'].
 show_ttl = False
-row_order = ['humans', 'Mixed-High', 'Low']
+row_order = ['humans', 'High-S0', 'Mixed-High-S0', 'Mixed-High-S8', 'Low-S8']
 human_r = row_order.index('humans')
 # ===========================================================================
 # 1. Load prototypes
@@ -85,7 +88,7 @@ bhvr_figs_dir = 'bhvr_fig_split'
 # ===========================================================================
 # Create figure
 # ===========================================================================
-nrows = 2 + len(genders)  # 2 for model prototypes and 1/2 for behavior
+nrows = len(models) + len(genders)  # 2 for model prototypes and 1/2 for behavior
 ncols = 7  # 7 emotions
 
 fig, axs = plt.subplots(nrows, ncols)
@@ -98,9 +101,10 @@ for c, emo in enumerate(EMOTIONS):
     # First two rows: model attention-prototypes:
     for mdl in models:
         mdl_lbl = mdl_lables[mdl]
+        sigma = int(mdl.split('blur')[1].split('_')[0])
         r = row_order.index(mdl_lbl)
         ax = axs[r, c]
-        key = (mdl, 8, emo)
+        key = (mdl, sigma, emo)
 
         if key in prototypes:
             proto = prototypes[key]["prototype"]

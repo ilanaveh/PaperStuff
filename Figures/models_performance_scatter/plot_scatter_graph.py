@@ -16,7 +16,6 @@ save_fig = False
 # style
 marker_size = 1
 yerr_capsize = 2
-single_fig = False
 plt.rcParams.update({'font.size': 14})
 linebreak = '\n'
 colors = {
