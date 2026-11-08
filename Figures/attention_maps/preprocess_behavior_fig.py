@@ -3,6 +3,13 @@
 Take figure from behavior paper (Wegrzyn et al 2017), and split it into individual face figures.
 Based on code from Transformer-Explainability/example_face_ims/preprocess_nimstim.py.
 """
+import sys
+from pathlib import Path
+
+# Support running this script directly from any working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from Config import path_config as paths
+
 import cv2
 import os
 import matplotlib.pyplot as plt
@@ -134,24 +141,23 @@ def crop_and_resize(input_path: str, save_pth: str, center: bool = False, top: i
 
         cropped = img.crop((0, top, width, bottom))
         resized = cropped.resize((size, size))
-        resized.save(os.path.join(save_pth, (input_path.split("/")[-1].split(".")[0] + f"_square_{size}_{suf}.png")))
+        resized.save(os.path.join(save_pth, (Path(input_path).stem + f"_square_{size}_{suf}.png")))
 
 
 if __name__ == "__main__":
-    home_dir = "/home/projects/bagon/ilanaveh"
     if only_crop:
-        save_pth = os.path.join(home_dir, 'code/Transformer-Explainability/samples/test_images_nimstim')
+        save_pth = paths.NIMSTIM_CROPS_DIR
         # im_names = ['01F_AN_O', '01F_DI_O', '01F_FE_O']
         im_names = ['01F_SA_O']
         for im in im_names:
-            image_pth = os.path.join(home_dir, f"data/NimStim/NimStim/{im}.BMP")
+            image_pth = os.path.join(paths.NIMSTIM_IMAGES_DIR, f"{im}.BMP")
             if isinstance(crop_tops[im], str):
                 crop_and_resize(image_pth, save_pth, center=True)
             else:
                 crop_and_resize(image_pth, save_pth, top=crop_tops[im])
     else:
-        save_pth = 'bhvr_fig_split'
-        # image_pth = os.path.join(home_dir, "data/S10Code/mappingTheEmotionalFace-master/figures/mainWeightPlot.png")  # only overlayed maps (from paper's data dir)
-        image_pth = os.path.join(home_dir, "code/PaperStuff/Figures/attention_maps/figs_from_bhvr_paper/fig4_weights_with_colorbar.png")  # also with color bar (downloaded from the paper).
+        save_pth = paths.BEHAVIOR_PANELS_DIR
+        # image_pth = paths.BEHAVIOR_ORIGINAL_FIGURE  # only overlayed maps (from paper's data dir)
+        image_pth = paths.BEHAVIOR_FIGURE  # also with color bar (downloaded from the paper).
         boxes = detect_panels(image_pth)
         save_split_panels(image_pth, boxes, save_pth)

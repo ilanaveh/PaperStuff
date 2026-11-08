@@ -4,6 +4,13 @@ Create scatter plots of apvit models for different test-blurs.
 Based on plot_bar_graph and on Transformers/APViT/eval/plot_scatter.py
 """
 
+import sys
+from pathlib import Path
+
+# Support running this script directly from any working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from Config import path_config as paths
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -30,7 +37,6 @@ labl_spc = {'Low': 8, 'Mixed-High': 1, 'High': 7, 'Mixed-Low': 1}
 not_finished_yet = ['RAF_blur11_pretrained0_freeze', 'RAF_blur14_pretrained0_freeze', 'RAF_blur9_pretrained4-8_freeze', 'RAF_blur13_pretrained8-16_freeze']
 results = {}
 n_test_samples = {}
-home_dir = '/home/projects/bagon/ilanaveh/code/Transformers'
 low_blurs = [4, 8]
 lower_blurs = {4: 8, 8: 16}  # for 'Mixed-Low'.
 fr_sufs = ['_freeze']  # ['_freeze', ']
@@ -108,7 +114,7 @@ def clean_model_names(models, means=None, errs=None, clean_models=False):
 
 fig, axs = plt.subplots(2, 1, figsize=[3.4, 4.8])
 
-with open(os.path.join(home_dir, 'APViT/eval/results.json'), "r") as f:
+with open(paths.APVIT_RESULTS, "r") as f:
     results['apvit'] = json.load(f)
 
 for i, lb in enumerate(low_blurs):
@@ -212,5 +218,5 @@ fig.subplots_adjust(left=.23)
 fig.supylabel("Test Accuracy", y=.58)
 
 if save_fig:
-    fig.savefig('scatter.png')
+    fig.savefig(paths.SCATTER_FIGURE)
 plt.show(block=True)

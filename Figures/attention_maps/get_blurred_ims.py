@@ -2,12 +2,19 @@
 22/09/26
 For the attention-maps figure, get blurred versions of the example face images.
 """
+import sys
+from pathlib import Path
+
+# Support running this script directly from any working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from Config import path_config as paths
+
 from PIL import Image, ImageFilter
 import os
 
 
-img_pth = '/home/projects/bagon/ilanaveh/data/RAF-DB/basic/Image/aligned_224'
-save_pth = 'blurred_face_ims'
+img_pth = paths.RAFDB_IMAGES_DIR
+save_pth = paths.BLURRED_FACES_DIR
 blur_sigma = 8
 # image_ids = ['0189', '0244', '1807', '1756', '1503', '1643',]
 # image_ids = ['1174', '1809', '1365',]

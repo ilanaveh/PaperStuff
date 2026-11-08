@@ -4,6 +4,13 @@ Create bar plots of different models (deit, APViT).
 Based on plot_bar_graph files from each project.
 """
 
+import sys
+from pathlib import Path
+
+# Support running this script directly from any working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from Config import path_config as paths
+
 import numpy as np
 import matplotlib.pyplot as plt
 import json
@@ -21,7 +28,6 @@ linebreak = '\n'
 # defenitions
 results = {}
 n_test_samples = {}
-home_dir = '/home/projects/bagon/ilanaveh/code/Transformers'
 # x_lbls = ['High', 'Low', 'Mixed']
 ttls = {'deit': 'Object Classification', 'apvit': 'Facial Expression Recognition',
         **{tb: f"Blur {tb} Test" for tb in cfg['test_blurs']}}
@@ -29,12 +35,12 @@ ttls = {'deit': 'Object Classification', 'apvit': 'Facial Expression Recognition
 
 # deit
 n_test_samples['deit'] = 50000
-with open(os.path.join(home_dir, 'deit/eval/results.json'), "r") as f:
+with open(paths.DEIT_RESULTS, "r") as f:
     results['deit'] = json.load(f)
 
 # apvit
 n_test_samples['apvit'] = 3068
-with open(os.path.join(home_dir, 'APViT/eval/results.json'), "r") as f:
+with open(paths.APVIT_RESULTS, "r") as f:
     results['apvit'] = json.load(f)
 
 # plot

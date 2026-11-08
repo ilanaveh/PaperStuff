@@ -1,4 +1,10 @@
+import sys
 from pathlib import Path
+
+# Support running this script directly from any working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from Config import path_config as paths
+
 import shutil
 from collections import Counter
 
@@ -127,9 +133,9 @@ def split_images_by_label(
 
 if __name__ == "__main__":
     split_images_by_label(
-        images_dir="/home/projects/bagon/ilanaveh/data/RAF-DB/basic/Image/aligned_224",
-        labels_txt_path="/home/projects/bagon/ilanaveh/data/RAF-DB/basic/EmoLabel/test.txt",
-        output_dir="/home/projects/bagon/ilanaveh/data/RAF-DB/split_test",
+        images_dir=paths.RAFDB_IMAGES_DIR,
+        labels_txt_path=paths.RAFDB_TEST_LABELS,
+        output_dir=paths.RAFDB_SPLIT_TEST_DIR,
         label_to_dirname=LABEL_TO_DIRNAME,
         copy_files=True,   # True = copy images, False = move images
     )

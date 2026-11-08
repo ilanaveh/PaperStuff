@@ -5,11 +5,17 @@ Assumes:
  1. prototypes were created and saved (by Transformer_Explainability/compare_models/build_prototypes.py).
  2. behavior results from Wegrzyn et al 2017 were preprocessed and saved (by preprocess_behavior_fig.py).
 """
+import sys
+from pathlib import Path
+
+# Support running this script directly from any working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from Config import path_config as paths
+
 import numpy as np
 import pandas as pd
 import os
 import ast
-from pathlib import Path
 from PIL import Image
 import matplotlib.pyplot as plt
 import torch
@@ -17,7 +23,6 @@ import torch
 POOLING = True
 prototype_config = 'pred_label_all'  # 'true_label_correct' / 'pred_label_all'
 
-home_dir = Path("/home/projects/bagon/ilanaveh")
 # models = ['RAF_blur8_pretrained0-8_freeze_fix_projs', 'RAF_blur8_freeze']
 models = ['RAF_blur8_pretrained0-8_freeze_fix_projs', 'RAF_blur8_freeze', 'RAF_blur0_pretrained0-8_freeze', 'RAF_blur0_freeze']
 mdl_lables = {
@@ -51,8 +56,7 @@ human_r = row_order.index('humans')
 # ===========================================================================
 # 1. Load prototypes
 # ===========================================================================
-prototype_dir = home_dir / Path("code/Transformer-Explainability/compare_models")
-summary_path = prototype_dir / Path(f'attention_prototypes/NATIVE_RESOLUTION{"/WITH_POOLING" if POOLING else ""}/{prototype_config}/prototype_summary.csv')
+summary_path = paths.prototype_summary_path(prototype_config, POOLING)
 
 summary_df = pd.read_csv(summary_path)
 
@@ -60,13 +64,8 @@ prototypes = {}
 
 for _, row in summary_df.iterrows():
     key = ast.literal_eval(row["key"])
-    prototype_path = Path(row["prototype_path"])
-    mean_face_path = Path(row["mean_face_path"])
-
-    # Allow paths saved as either absolute or relative.
-    if not prototype_path.exists():
-        prototype_path = prototype_dir / prototype_path.parent / prototype_path.name
-        mean_face_path = prototype_dir / mean_face_path.parent / mean_face_path.name
+    prototype_path = paths.resolve_prototype_path(row["prototype_path"])
+    mean_face_path = paths.resolve_prototype_path(row["mean_face_path"])
 
     if not prototype_path.exists():
         raise FileNotFoundError(
@@ -83,7 +82,7 @@ for _, row in summary_df.iterrows():
 # ===========================================================================
 # 2. Load behavior results from Wegrzyn et al 2017
 # ===========================================================================
-bhvr_figs_dir = 'bhvr_fig_split'
+bhvr_figs_dir = paths.BEHAVIOR_PANELS_DIR
 
 # ===========================================================================
 # Create figure

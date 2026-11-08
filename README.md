@@ -4,6 +4,18 @@
 >
 > **Description**: This repository contains code and assets for generating paper figures related to face attention visualization, model performance analysis, and behavioral experiments. It is not a fork of an existing public repository but rather a collection of custom visualization scripts developed for research papers.
 
+## Local path setup
+
+On each computer, copy `Config/path_config.example.py` to
+`Config/path_config.py` and edit the external roots at the top for that machine.
+The local `path_config.py` is ignored by Git. The example is tracked so new
+checkouts have a setup template. Repository input and output paths automatically
+follow the checkout location; individual paths can also be overridden in the
+local file. Create configured output directories before running scripts.
+
+Scripts can be run directly from any working directory, for example:
+`python Figures/attention_maps/plot_attention_prototypes.py`.
+
 ## Contents
 
 ### Figures/attention_maps/

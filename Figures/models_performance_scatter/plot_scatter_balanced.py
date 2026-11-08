@@ -7,6 +7,13 @@ Based on plot_scatter_graph.py, but:
  - currently show only blur 8 (remove 4).
 """
 
+import sys
+from pathlib import Path
+
+# Support running this script directly from any working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from Config import path_config as paths
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -33,7 +40,6 @@ labl_spc = {'Low': 8, 'Mixed-High': 1, 'High': 7, 'Mixed-Low': 1}
 # defenitions
 results = {}
 n_test_samples = [162, 160, 74, 478, 1185, 329, 680]  # [Angry, Disgust, Fear, Sad, Happy, Surprise, Neutral]
-home_dir = '/home/projects/bagon/ilanaveh/code/Transformers'
 low_blur = 8
 lower_blurs = {4: 8, 8: 16}  # for 'Mixed-Low'.
 fr_sufs = ['_freeze']  # ['_freeze', '']
@@ -118,7 +124,7 @@ def clean_model_names(models, means=None, errs=None, clean_models=False):
 fig = plt.figure(figsize=[3.4, 2.8])
 ax = plt.gca()
 
-with open(os.path.join(home_dir, 'APViT/eval/results_balanced.json'), "r") as f:
+with open(paths.APVIT_BALANCED_RESULTS, "r") as f:
     results = json.load(f)
 
 # test_blurs = [0, 2, 4, 8, 16, 32, 64]
@@ -212,5 +218,5 @@ fig.subplots_adjust(left=.23)
 fig.supylabel("Test Accuracy", y=.58)
 
 if save_fig:
-    fig.savefig('scatter.png')
+    fig.savefig(paths.SCATTER_FIGURE)
 plt.show(block=True)
