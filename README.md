@@ -16,6 +16,34 @@ local file. Create configured output directories before running scripts.
 Scripts can be run directly from any working directory, for example:
 `python Figures/attention_maps/plot_attention_prototypes.py`.
 
+## Attention-map figure options
+
+Edit `Config/figure_configs.py` to configure attention-map figures. The named
+options include pooling, prototype type, models, emotions, mean-face overlays,
+interpolation, colors, alpha, labels, row order, figure size, and human panels.
+Machine-specific input paths remain in `Config/path_config.py`.
+
+- `current` (default) preserves the existing figure settings.
+- `models_only_blurred_s8` omits human panels and `High-S0`, and blurs only
+  the mean-face backgrounds of `Mixed-High-S8` and `Low-S8` with Gaussian sigma 8
+  pixels. Attention maps remain unchanged.
+
+```sh
+python Figures/attention_maps/plot_attention_prototypes.py --config current
+python Figures/attention_maps/plot_attention_prototypes.py --config models_only_blurred_s8
+```
+
+Set `input_column` in `Config/figure_configs.py` to `"blur"` for numeric blur
+values or `"example_input"` for example faces in the table's second column.
+S0 rows use `RAFDB_IMAGES_DIR/test_2934.jpg`; S8 rows use
+`BLURRED_FACES_DIR/test_2934_blur8.jpg`. Filenames and the example-input header
+are configurable. Only the pretraining column is colored.
+
+Use `--output figure.png --no-show` to save without opening a window.
+Use an empty `genders` list or `show_humans=False` to omit human panels;
+`genders=["f", "m"]` adds one panel row per gender. Row and column counts follow
+the selected models, human panels, and emotions.
+
 ## Contents
 
 ### Figures/attention_maps/

@@ -13,6 +13,7 @@ from pathlib import Path
 # Support running this script directly from any working directory.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from Config import path_config as paths
+from Config.graphics import model_colors as colors
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,12 +30,6 @@ marker_size = 1
 yerr_capsize = 2
 plt.rcParams.update({'font.size': 14})
 linebreak = '\n'
-colors = {
-            'Low': (0.68, 0.56, 0.82),#(.745, .68, .83),  # Purple (low)
-            'Mixed-High': (0.38, 0.76, 0.38),#(.5, .788, 0.5),  # Green (mixed)
-            'High': (1, .753, 0.525),  # Orange (High)
-            'Mixed-Low': (.651, .792, .925),  # Blue
-    }
 labl_spc = {'Low': 8, 'Mixed-High': 1, 'High': 7, 'Mixed-Low': 1}
 
 # defenitions
