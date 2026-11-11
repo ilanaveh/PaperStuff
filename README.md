@@ -77,3 +77,61 @@ These visualization tools were developed to support research on:
 - **Performance comparison** across different model architectures and training configurations
 
 The figures generated from this codebase have been used in academic publications and presentations.
+
+### Wasserstein delta histogram
+
+`Figures/attention_maps/plot_wasserstein_deltas_hist.py` plots the
+`delta_a_minus_b` column of a supplied CSV. For example:
+
+```sh
+python Figures/attention_maps/plot_wasserstein_deltas_hist.py "path/to/paired_distances.csv" --bins 30 --output deltas.png --no-show
+```
+
+The attention-map figure includes this histogram to the right of the maps, aligned with their bottom edge.
+In `Config/figure_configs.py`, set `wasserstein_histogram_csv` to the input CSV;
+the default follows the local prototype root. Bin count, color, title, and panel
+position/size are configurable. Set `show_wasserstein_histogram=False` to hide it.
+The histogram negates `delta_a_minus_b` to show D2 - D1 and weights observations
+so bin heights sum to 100% of the usable test images. All finite numeric deltas are plotted; missing, nonnumeric, and infinite values
+are excluded. Missing columns or an input with no usable deltas raise an error.
+
+The histogram defaults to 15 bins. `wasserstein_histogram_xlim_quantiles`
+limits the visible x-range to the central 99% by default; set it to `None`
+to show the full range. Tail observations still contribute to the histogram
+and percentage normalization. The vertical offset, zero-line width, and y-ticks
+are also configurable in `Config/figure_configs.py`.
+
+### Paired Wasserstein distance scatter
+
+Set `wasserstein_panel_type="scatter"` in `Config/figure_configs.py` to show
+D1 (`wasserstein_distance_a`) on x and D2 (`wasserstein_distance_b`) on y,
+with a dashed y=x line. Set it to `"histogram"` for the delta histogram (default).
+Both use `wasserstein_histogram_csv`, the existing panel dimensions/position,
+and `show_wasserstein_histogram` as the shared visibility switch. Scatter color,
+marker size, and alpha have their own `wasserstein_scatter_*` settings.
+Rows with either distance missing, nonnumeric, or infinite are excluded together.
+
+To run the scatter independently:
+
+```sh
+python Figures/attention_maps/plot_wasserstein_dists_scatter.py "path/to/paired_distances.csv" --output distances.png --no-show
+```
+
+### Paired distances and stacked panels
+
+`Figures/attention_maps/plot_wasserstein_dists_paired.py` accepts the paired CSV
+as a positional argument (plus `--output` and `--no-show`). Each finite CSV pair
+is drawn at D1 and D2 with a connecting line. No observations are subsampled.
+
+In `Config/figure_configs.py`, choose one plot or two stacked plots:
+
+```python
+"wasserstein_panel_type": "paired",
+# Or, top to bottom:
+"wasserstein_panel_type": ["paired", "histogram"],
+```
+
+The stack is centered on the middle model row. Adjust
+`wasserstein_panel_stack_gap_inches` for vertical spacing. Both panels use the
+shared CSV and panel dimensions; `wasserstein_paired_*` controls paired styling.
+The delta bracket is shown when the selection includes a histogram.

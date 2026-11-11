@@ -12,6 +12,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from Config import path_config as paths
 from Config.graphics import model_colors
+from Figures.attention_maps.plot_wasserstein_deltas_hist import plot_wasserstein_deltas_hist
+from Figures.attention_maps.plot_wasserstein_dists_scatter import plot_wasserstein_dists_scatter
+from Figures.attention_maps.plot_wasserstein_dists_paired import plot_wasserstein_dists_paired
 from Config.figure_configs import (
     ATTENTION_MAP_CONFIGS, DEFAULT_ATTENTION_MAP_CONFIG, get_attention_map_config,
 )
@@ -31,6 +34,14 @@ import torch
 
 def plot_attention_maps(config):
     """Build a figure using a preset from Config.figure_configs."""
+    selection = config["wasserstein_panel_type"]
+    panel_types = [selection] if isinstance(selection, str) else list(selection)
+    if not 1 <= len(panel_types) <= 2 or any(
+        kind not in {"histogram", "scatter", "paired"} for kind in panel_types
+    ):
+        raise ValueError("wasserstein_panel_type must select one or two of histogram, scatter, paired")
+    wasserstein_axes = []
+    title_weight = "bold" if config["titles_bold"] else "normal"
     POOLING = config["POOLING"]
     prototype_config = config["prototype_type"]
     models = config["models"]
@@ -113,7 +124,7 @@ def plot_attention_maps(config):
     table_fraction = table_width / figure_width
 
     for c, emo in enumerate(EMOTIONS):
-        axs[0, c].set_title(emo, fontsize=config["model_table_header_font_size"], weight="bold",
+        axs[0, c].set_title(emo, fontsize=config["model_table_header_font_size"], weight=title_weight,
                             pad=config["emotion_heading_pad_points"])
 
         # Model attention prototypes:
@@ -160,7 +171,7 @@ def plot_attention_maps(config):
             ax.set_yticks([])
 
             if show_ttl and key in prototypes:
-                ax.set_title(f"N={prototypes[key]['n']}")
+                ax.set_title(f"N={prototypes[key]['n']}", weight=title_weight, fontsize=config["font_size"])
 
         # Optional human behavior rows:
         for r, gen in enumerate(genders):
@@ -197,9 +208,9 @@ def plot_attention_maps(config):
 
     maps_left = min(ax.get_position().x0 for ax in axs.flat)
     maps_right = max(ax.get_position().x1 for ax in axs.flat)
-    fig.text((maps_left + maps_right) / 2, config["attention_maps_title_y"],
+    attention_title = fig.text((maps_left + maps_right) / 2, config["attention_maps_title_y"],
              config["attention_maps_title"], ha="center", va="center",
-             fontsize=config["model_table_header_font_size"], weight="bold")
+             fontsize=config["model_table_header_font_size"], weight=title_weight)
 
     if config["show_colorbar"]:
         model_axes = [axs[r, c] for r in model_row_indices.values() for c in range(ncols)]
@@ -219,7 +230,7 @@ def plot_attention_maps(config):
                  bar_bottom + bar_height / 2 - config["colorbar_label_down_inches"] / figure_height,
                  config["colorbar_label"],
                  ha="right", va="center", multialignment="left",
-                 fontsize=config["model_table_font_size"])
+                 fontsize=config["model_table_header_font_size"])
         colorbar.ax.tick_params(labelsize=config["model_table_font_size"])
 
     # Separate table cells share each model panel's vertical center. Human rows
@@ -232,13 +243,13 @@ def plot_attention_maps(config):
     if input_column == "example_input":
         headers[1] = config["example_input_header"]
     title_y = config["attention_maps_title_y"] - config["left_titles_down_inches"] / figure_height
-    title_style = dict(ha="center", va="center", weight="bold",
+    title_style = dict(ha="center", va="center", weight=title_weight,
                        fontsize=config["model_table_header_font_size"])
     table_ax.text(pretrain_fraction / 2 + 0.03, title_y, headers[0], **title_style)
     title_offset = config["example_input_title_offset_inches"] / (
         table_ax.get_position().width * figure_width
     )
-    table_ax.text((1 + pretrain_fraction) / 2 + title_offset,
+    example_title = table_ax.text((1 + pretrain_fraction) / 2 + title_offset,
                   title_y, headers[1], **title_style)
     for mdl in models:
         r = model_row_indices[model_labels[mdl]]
@@ -279,12 +290,19 @@ def plot_attention_maps(config):
             input_gap = config["example_input_gap_inches"] / (
                 table_ax.get_position().width * figure_width
             )
+            image_down = (config["example_input_sigma_image_down_inches"] / figure_height
+                          if config["example_input_show_sigma"] else 0)
             input_ax = table_ax.inset_axes([
-                pretrain_fraction + input_gap, pos.y0,
+                pretrain_fraction + input_gap, pos.y0 - image_down,
                 1 - pretrain_fraction - input_gap, pos.height,
             ])
             input_ax.imshow(example_inputs[sigma])
             input_ax.set_axis_off()
+            if config["example_input_show_sigma"]:
+                input_ax.set_title(
+                    rf"$\sigma = {sigma}$", fontsize=config["model_table_header_font_size"],
+                    weight=title_weight, pad=config["example_input_sigma_title_pad_points"],
+                )
 
     # Brackets use table coordinates to stay aligned when figure height is fitted.
     table_pos = table_ax.get_position()
@@ -296,12 +314,14 @@ def plot_attention_maps(config):
         fig.add_artist(Line2D(
             [x, x + bracket_width, x + bracket_width, x], [y1, y1, y2, y2],
             transform=table_ax.transAxes, color="black",
-            linewidth=config["row_bracket_linewidth"], clip_on=False,
+            linewidth=config["row_bracket_linewidth"], clip_on=False, zorder=-0.5,
         ))
-        label_gap = config["row_bracket_label_gap_inches"] / (figure_width * table_pos.width)
-        table_ax.text(x + bracket_width + label_gap, (y1 + y2) / 2, label,
-                      ha="left", va="center", fontsize=config["model_table_font_size"],
-                      clip_on=False)
+        # White label background masks the stem directly underneath the text.
+        table_ax.text(x + bracket_width, (y1 + y2) / 2, label,
+                      ha="center", va="center", fontsize=config["model_table_font_size"],
+                      bbox=dict(facecolor="white", edgecolor="none",
+                                pad=config["row_bracket_label_padding_points"]),
+                      clip_on=False, zorder=20)
 
     bracket_centers = []
     for index, (first, second) in enumerate(config["row_bracket_pairs"]):
@@ -312,10 +332,11 @@ def plot_attention_maps(config):
         y1 = first_pos.y0 + first_pos.height / 2
         y2 = second_pos.y0 + second_pos.height / 2
         half_gap = config["row_bracket_vertical_gap_inches"] / (2 * figure_height)
-        add_right_bracket(bracket_left, y1 - half_gap, y2 + half_gap,
-                          config["row_bracket_labels"][index])
+        y_offset = config["row_bracket_y_offsets_inches"][index] / figure_height
+        add_right_bracket(bracket_left, y1 - half_gap + y_offset,
+                          y2 + half_gap + y_offset, config["row_bracket_labels"][index])
         bracket_centers.append((y1 + y2) / 2)
-    if len(bracket_centers) == 2:
+    if len(bracket_centers) == 2 and "histogram" in panel_types:
         outer_left = bracket_left + bracket_width + config["row_bracket_outer_gap_inches"] / (
             figure_width * table_pos.width
         )
@@ -347,6 +368,115 @@ def plot_attention_maps(config):
                       y=config["multi_human_label_position"][1],
                       fontsize=config["multi_human_font_size"])
 
+    if config["show_wasserstein_histogram"]:
+        # Add room on the right while preserving existing panel sizes/positions.
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        right_edge = max(text.get_window_extent(renderer).x1 for text in table_ax.texts) / fig.dpi
+        hist_left = right_edge + config["wasserstein_histogram_gap_inches"]
+        hist_width = config["wasserstein_histogram_size_inches"]
+        if len(panel_types) == 2:
+            hist_width *= config["wasserstein_panel_stack_width_scale"]
+        hist_height_inches = config["wasserstein_histogram_height_inches"]
+        hist_height = hist_height_inches / figure_height
+        row_centers = [axs[r, 0].get_position().y0 + axs[r, 0].get_position().height / 2
+                       for r in model_row_indices.values()]
+        stack_gap = config["wasserstein_panel_stack_gap_inches"] / figure_height
+        stack_height = len(panel_types) * hist_height + (len(panel_types) - 1) * stack_gap
+        stack_bottom = (float(np.median(row_centers)) - stack_height / 2
+                        + config["wasserstein_histogram_y_offset_inches"] / figure_height)
+        for index, panel_type in enumerate(panel_types):
+            panel_bottom = stack_bottom + (len(panel_types) - 1 - index) * (hist_height + stack_gap)
+            hist_ax = fig.add_axes([
+                hist_left / figure_width, panel_bottom, hist_width / figure_width, hist_height,
+            ])
+            wasserstein_axes.append(hist_ax)
+            if panel_type == "histogram":
+                plot_wasserstein_deltas_hist(
+                    config["wasserstein_histogram_csv"], hist_ax,
+                    bins=config["wasserstein_histogram_bins"],
+                    color=config["wasserstein_histogram_color"], font_size=config["font_size"],
+                    title=config["wasserstein_histogram_title"], title_weight=title_weight,
+                    xlim_quantiles=config["wasserstein_histogram_xlim_quantiles"],
+                    zero_linewidth=config["wasserstein_histogram_zero_linewidth"],
+                    yticks=config["wasserstein_histogram_yticks"],
+                )
+            elif panel_type == "scatter":
+                plot_wasserstein_dists_scatter(
+                    config["wasserstein_histogram_csv"], hist_ax,
+                    color=config["wasserstein_scatter_color"],
+                    marker_size=config["wasserstein_scatter_marker_size"],
+                    alpha=config["wasserstein_scatter_alpha"], font_size=config["font_size"],
+                    show_ticklabels=config["wasserstein_scatter_show_ticklabels"],
+                )
+            else:
+                plot_wasserstein_dists_paired(
+                    config["wasserstein_histogram_csv"], hist_ax,
+                    color=config["wasserstein_paired_color"],
+                    alpha=config["wasserstein_paired_alpha"],
+                    linewidth=config["wasserstein_paired_linewidth"],
+                    marker_size=config["wasserstein_paired_marker_size"], font_size=config["font_size"],
+                )
+            hist_ax.set_box_aspect(hist_height_inches / hist_width)
+            hist_ax.set_anchor("SW")
+        # Measure tick/axis labels so the histogram fits closely without overlap.
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        decoration_width = max((ax.get_window_extent(renderer).x0
+                                - ax.get_tightbbox(renderer).x0) / fig.dpi
+                               for ax in wasserstein_axes)
+        hist_left = right_edge + config["wasserstein_histogram_gap_inches"] + decoration_width
+        new_width = hist_left + hist_width + 0.04
+        old_width = figure_width
+        positions = [(ax, ax.get_position().frozen()) for ax in fig.axes]
+        text_positions = [(text, text.get_position()) for text in fig.texts]
+        fig.set_size_inches(new_width, figure_height)
+        for ax, pos in positions:
+            ax.set_position([pos.x0 * old_width / new_width, pos.y0,
+                             pos.width * old_width / new_width, pos.height])
+        for text, (x, y) in text_positions:
+            text.set_position((x * old_width / new_width, y))
+        figure_width = new_width
+        for ax in wasserstein_axes:
+            pos = ax.get_position()
+            ax.set_position([hist_left / new_width, pos.y0, hist_width / new_width, hist_height])
+
+    # Align the rendered top edges, including the multiline example header.
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    title_delta = (example_title.get_window_extent(renderer).y1
+                   - attention_title.get_window_extent(renderer).y1)
+    title_x, title_y = attention_title.get_position()
+    attention_title.set_position((title_x, title_y + title_delta / fig.bbox.height))
+
+    if len(wasserstein_axes) == 2:
+        # Fit the stack including labels to the attention section's rendered span.
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        main_artists = [ax for ax in fig.axes if ax is not table_ax and ax not in wasserstein_axes]
+        main_artists += list(table_ax.texts) + list(table_ax.tables) + list(table_ax.child_axes)
+        main_artists += list(fig.texts)
+        main_bounds = [artist.get_tightbbox(renderer) for artist in main_artists]
+        main_bounds = [box for box in main_bounds if box is not None]
+        main_bottom = min(box.y0 for box in main_bounds) / fig.dpi
+        main_top = max(box.y1 for box in main_bounds) / fig.dpi
+        upper_ax, lower_ax = wasserstein_axes
+        top_decoration = (upper_ax.get_tightbbox(renderer).y1
+                          - upper_ax.get_window_extent(renderer).y1) / fig.dpi
+        bottom_decoration = (lower_ax.get_window_extent(renderer).y0
+                             - lower_ax.get_tightbbox(renderer).y0) / fig.dpi
+        gap = config["wasserstein_panel_stack_gap_inches"]
+        hist_height_inches = (main_top - main_bottom - top_decoration - bottom_decoration - gap) / 2
+        if hist_height_inches <= 0:
+            raise ValueError("Stack gap leaves no vertical room for Wasserstein panels")
+        lower_bottom = main_bottom + bottom_decoration
+        for index, ax in enumerate(wasserstein_axes):
+            y_inches = lower_bottom + (1 - index) * (hist_height_inches + gap)
+            pos = ax.get_position()
+            ax.set_position([pos.x0, y_inches / figure_height,
+                             hist_width / figure_width, hist_height_inches / figure_height])
+            ax.set_box_aspect(hist_height_inches / hist_width)
+
     if config["fit_figure_height"]:
         # Keep physical panel sizes while trimming unused space above/below.
         fig.canvas.draw()
@@ -369,6 +499,16 @@ def plot_attention_maps(config):
         for text, (x, y) in text_positions:
             text.set_position((x, (y * figure_height - bottom) / new_height))
 
+    for ax in wasserstein_axes:
+        # Preserve physical panel dimensions after figure resizing/trimming.
+        pos = ax.get_position()
+        size = hist_width
+        height = hist_height_inches
+        ax.set_position([pos.x0, pos.y0, size / fig.get_figwidth(),
+                         height / fig.get_figheight()])
+        ax.set_box_aspect(height / size)
+        ax.set_anchor("SW")
+    fig.canvas.draw()
     return fig
 
 
@@ -376,7 +516,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", choices=ATTENTION_MAP_CONFIGS,
                         default='models_only_blurred_s8')
-    parser.add_argument("--output", type=Path, help="Save the figure to this path")
+    parser.add_argument("--output", type=Path, help="Save the figure to this path",
+                        default="attention_prototypes_with_wasser.png")
     parser.add_argument("--no-show", action="store_true", help="Skip the interactive window")
     args = parser.parse_args()
     fig = plot_attention_maps(get_attention_map_config(args.config))

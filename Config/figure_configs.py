@@ -4,6 +4,8 @@ Paths are configured separately in path_config.py. Add future figure families
 alongside ATTENTION_MAP_CONFIGS.
 """
 from copy import deepcopy
+from pathlib import Path
+from . import path_config as paths
 
 
 _ATTENTION_CURRENT = {
@@ -40,10 +42,14 @@ _ATTENTION_CURRENT = {
     "mean_face_blur_sigma": {},
     "figsize": (6.2, 3.4),
     "figure_width_scale": 0.8,
-    "font_size": 10,
-    "attention_maps_title": "Mean Relevance-Maps Across all Test Images",
+    "font_size": 7,
+    "titles_bold": False,  # False uses normal weight for all titles/headings.
+    "attention_maps_title": "",  # "Mean Relevance-Maps Across all Test Images"
     "attention_maps_title_y": 0.94,
     "input_column": "example_input",  # "blur" or "example_input"
+    "example_input_show_sigma": True,  # Add a sigma title above each example face.
+    "example_input_sigma_title_pad_points": 3,
+    "example_input_sigma_image_down_inches": 0.04,
     "example_input_header": "Example\nTest\nInput",
     "example_input_filenames": {
         0: "test_2788.jpg",       # in RAFDB_IMAGES_DIR
@@ -57,7 +63,7 @@ _ATTENTION_CURRENT = {
         "RAF_blur8_freeze": "Low\nResolution",
     },
     "model_table_width_inches": 1.05,
-    "model_table_font_size": 8,
+    "model_table_font_size": 7,
     "model_table_header_font_size": 7,
     "pretrain_column_fraction": 0.3,
     "pretrain_label_rotation": 90,
@@ -74,15 +80,17 @@ _ATTENTION_CURRENT = {
         ("Mixed-High-S0", "Mixed-High-S8"),
         ("Mixed-High-S8", "Low-S8"),
     ],
-    "row_bracket_gap_inches": 0.10,
+    "row_bracket_gap_inches": 0.07,
     "row_bracket_width_inches": 0.055,
-    "row_bracket_outer_gap_inches": 0.23,
+    "row_bracket_outer_gap_inches": 0.09,
     "row_bracket_linewidth": 1.2,
     "row_bracket_vertical_gap_inches": 0.06,
     "row_bracket_outer_height_scale": 0.7,
     "row_bracket_labels": ["D1", "D2"],
+    "row_bracket_y_offsets_inches": [0.06, -0.06],
     "row_bracket_outer_label": "\u0394",
     "row_bracket_label_gap_inches": 0.04,
+    "row_bracket_label_padding_points": 2.6,
     "row_frame_linewidth": 1,
     "emotion_heading_pad_points": 17,
     "show_colorbar": True,
@@ -96,6 +104,34 @@ _ATTENTION_CURRENT = {
     "colorbar_label_down_inches": 0.07,
     "colorbar_left_fraction": 0.2,
     "example_input_title_offset_inches": 0.06,
+    "show_wasserstein_histogram": True,  # Show/hide the distance panel in either mode.
+    "wasserstein_panel_type": ["paired", "histogram"],  # "histogram", "scatter", or "paired"
+    # A list selects two panels in top-to-bottom order, e.g. ["paired", "histogram"].
+    "wasserstein_panel_stack_gap_inches": 0.4,
+    "wasserstein_panel_stack_width_scale": 0.9,
+    "wasserstein_paired_color": "0.45",
+    "wasserstein_paired_alpha": 0.08,
+    "wasserstein_paired_linewidth": 0.4,
+    "wasserstein_paired_marker_size": 2,
+    "wasserstein_scatter_color": "0.45",
+    "wasserstein_scatter_marker_size": 3,
+    "wasserstein_scatter_alpha": 0.35,
+    "wasserstein_scatter_show_ticklabels": False,
+    "wasserstein_histogram_csv": str(
+        Path(paths.PROTOTYPE_DIR) / "attention_comparisons"
+        / "paired_resolution_vs_model" / "paired_distances.csv"
+    ),
+    "wasserstein_histogram_bins": 15,
+    "wasserstein_histogram_color": "0.45",
+    "wasserstein_histogram_title": "",
+    "wasserstein_histogram_xlim_quantiles": (0.005, 0.995),  # None shows full range.
+    "wasserstein_histogram_y_offset_inches": 0.0,  # Relative to middle model-row center.
+    "wasserstein_histogram_zero_linewidth": 1.3,
+    "wasserstein_histogram_yticks": list(range(0, 101, 5)),
+    # Shared panel dimensions (histogram or scatter), centered on the middle model row.
+    "wasserstein_histogram_size_inches": 1.35,  # Plot width.
+    "wasserstein_histogram_height_inches": 1.3,
+    "wasserstein_histogram_gap_inches": 0.20,
     "fit_figure_height": True,
     "figure_vertical_padding_inches": 0.06,
     "human_label": "Human\nObservers",
@@ -103,7 +139,7 @@ _ATTENTION_CURRENT = {
     "human_panel_scale": 0.75,
     "human_panel_vertical_divisor": 1.5,
     "multi_human_label_position": (0.05, 0.26),
-    "multi_human_font_size": 12,
+    "multi_human_font_size": 7,
 }
 
 ATTENTION_MAP_CONFIGS = {"current": deepcopy(_ATTENTION_CURRENT)}
