@@ -14,7 +14,9 @@ import pandas as pd
 def plot_wasserstein_deltas_hist(csv_path, ax=None, *, bins=15, color="0.45",
                                  font_size=7, title="",
                                  title_weight="normal", xlim_quantiles=(0.005, 0.995),
-                                 zero_linewidth=1.3, yticks=tuple(range(0, 101, 5))):
+                                 zero_linewidth=1.3, yticks=tuple(range(0, 101, 5)),
+                                 color_by_sign=False, positive_color="#0072B2",
+                                 negative_color="#D55E00"):
     """Plot negated finite delta_a_minus_b values as percentages and return the destination axes.
 
     Missing, nonnumeric, and infinite values are excluded. Raise ValueError if
@@ -32,7 +34,16 @@ def plot_wasserstein_deltas_hist(csv_path, ax=None, *, bins=15, color="0.45",
         _, ax = plt.subplots(figsize=(3, 2.2), layout="constrained")
     values = -values  # Reverse A - B to D2 - D1.
     weights = np.full(values.size, 100.0 / values.size)
-    ax.hist(values, bins=bins, weights=weights, color=color, edgecolor="white", linewidth=0.3)
+    if color_by_sign:
+        # Split any bin crossing zero so each bar represents a single sign.
+        bins = np.histogram_bin_edges(values, bins=bins)
+        if bins[0] < 0 < bins[-1]:
+            bins = np.unique(np.append(bins, 0))
+    _, edges, bars = ax.hist(values, bins=bins, weights=weights, color=color,
+                             edgecolor="white", linewidth=0.3)
+    if color_by_sign:
+        for left, right, bar in zip(edges[:-1], edges[1:], bars):
+            bar.set_facecolor(positive_color if (left + right) / 2 >= 0 else negative_color)
     if xlim_quantiles is None:
         data_min, data_max = values.min(), values.max()
     else:
@@ -64,10 +75,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("csv_path", type=Path)
     parser.add_argument("--bins", type=int, default=15)
+    parser.add_argument("--color-by-sign", action="store_true")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--no-show", action="store_true")
     args = parser.parse_args()
-    ax = plot_wasserstein_deltas_hist(args.csv_path, bins=args.bins)
+    ax = plot_wasserstein_deltas_hist(args.csv_path, bins=args.bins, color_by_sign=args.color_by_sign)
     if args.output:
         ax.figure.savefig(args.output)
     if args.no_show:

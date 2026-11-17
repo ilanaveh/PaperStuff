@@ -135,3 +135,24 @@ The stack is centered on the middle model row. Adjust
 `wasserstein_panel_stack_gap_inches` for vertical spacing. Both panels use the
 shared CSV and panel dimensions; `wasserstein_paired_*` controls paired styling.
 The delta bracket is shown when the selection includes a histogram.
+
+Paired colors are controlled independently by
+`wasserstein_paired_line_color_mode` (`"gray"`, `"random"`, `"slope"`) and
+`wasserstein_paired_marker_color_mode` (`"gray"`, `"distance"`). Positive slope
+means D2 > D1; zero slopes retain the gray color. Random colors use the configured
+seed for repeatability. Colors for both slope signs and D1/D2 are configurable.
+Enable `wasserstein_histogram_color_by_sign` to color positive/negative D2-D1
+bars separately. A bin crossing zero is split there, which may add one bar.
+Standalone scripts support `--line-color-mode`, `--marker-color-mode`, and
+`--color-by-sign`, respectively. Defaults preserve gray lines, markers, and bars.
+
+Set `wasserstein_paired_marker_color_mode="slope"` to color both endpoints by
+their pair's slope, using the same positive/negative colors as slope-colored lines.
+`wasserstein_paired_line_alpha` controls line opacity independently of marker
+opacity (`wasserstein_paired_alpha`); `None` uses the marker opacity. The default
+line opacity is 0.04. The standalone script accepts `--line-alpha`.
+
+`wasserstein_paired_transparent_slopes` selects `"all"` (default), `"positive"`,
+or `"negative"`. Selected pairs use the configured line/marker alpha; other pairs
+are fully opaque. Both endpoints follow their pair's slope. Zero slopes remain
+opaque in selective modes. The standalone flag is `--transparent-slopes`.

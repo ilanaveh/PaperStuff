@@ -400,6 +400,9 @@ def plot_attention_maps(config):
                     xlim_quantiles=config["wasserstein_histogram_xlim_quantiles"],
                     zero_linewidth=config["wasserstein_histogram_zero_linewidth"],
                     yticks=config["wasserstein_histogram_yticks"],
+                    color_by_sign=config["wasserstein_histogram_color_by_sign"],
+                    positive_color=config["wasserstein_histogram_positive_color"],
+                    negative_color=config["wasserstein_histogram_negative_color"],
                 )
             elif panel_type == "scatter":
                 plot_wasserstein_dists_scatter(
@@ -414,8 +417,18 @@ def plot_attention_maps(config):
                     config["wasserstein_histogram_csv"], hist_ax,
                     color=config["wasserstein_paired_color"],
                     alpha=config["wasserstein_paired_alpha"],
+                    line_alpha=config["wasserstein_paired_line_alpha"],
+                    transparent_slopes=config["wasserstein_paired_transparent_slopes"],
                     linewidth=config["wasserstein_paired_linewidth"],
                     marker_size=config["wasserstein_paired_marker_size"], font_size=config["font_size"],
+                    line_color_mode=config["wasserstein_paired_line_color_mode"],
+                    marker_color_mode=config["wasserstein_paired_marker_color_mode"],
+                    positive_color=config["wasserstein_paired_positive_color"],
+                    negative_color=config["wasserstein_paired_negative_color"],
+                    d1_color=config["wasserstein_paired_d1_color"],
+                    d2_color=config["wasserstein_paired_d2_color"],
+                    random_seed=config["wasserstein_paired_random_seed"],
+                    negative_on_top=config["wasserstein_paired_negative_on_top"],
                 )
             hist_ax.set_box_aspect(hist_height_inches / hist_width)
             hist_ax.set_anchor("SW")
