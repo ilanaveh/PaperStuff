@@ -19,8 +19,8 @@ def plot_wasserstein_dists_paired(csv_path, ax=None, *, color="0.45", alpha=0.08
         raise ValueError("line_color_mode must be gray, random, or slope")
     if marker_color_mode not in {"gray", "distance", "slope"}:
         raise ValueError("marker_color_mode must be gray, distance, or slope")
-    if transparent_slopes not in {"all", "positive", "negative"}:
-        raise ValueError("transparent_slopes must be all, positive, or negative")
+    if transparent_slopes not in {"all", "positive", "negative", "none"}:
+        raise ValueError("transparent_slopes must be all, positive, negative, or none")
     frame = pd.read_csv(csv_path)
     columns = ["wasserstein_distance_a", "wasserstein_distance_b"]
     missing = [column for column in columns if column not in frame]
@@ -50,7 +50,9 @@ def plot_wasserstein_dists_paired(csv_path, ax=None, *, color="0.45", alpha=0.08
         marker_colors = color
     line_opacity = alpha if line_alpha is None else line_alpha
     marker_opacity = alpha
-    if transparent_slopes != "all":
+    if transparent_slopes == "none":
+        line_opacity = marker_opacity = 1.0
+    elif transparent_slopes != "all":
         selected = slopes > 0 if transparent_slopes == "positive" else slopes < 0
         line_opacity = np.where(selected, line_opacity, 1.0)
         marker_opacity = np.tile(np.where(selected, alpha, 1.0), 2)
@@ -82,7 +84,7 @@ def main():
     parser.add_argument("csv_path", type=Path)
     parser.add_argument("--alpha", type=float, default=0.08)
     parser.add_argument("--line-alpha", type=float, help="Line opacity; defaults to --alpha")
-    parser.add_argument("--transparent-slopes", choices=["all", "positive", "negative"], default="all")
+    parser.add_argument("--transparent-slopes", choices=["all", "positive", "negative", "none"], default="all")
     parser.add_argument("--linewidth", type=float, default=0.4)
     parser.add_argument("--line-color-mode", choices=["gray", "random", "slope"], default="gray")
     parser.add_argument("--marker-color-mode", choices=["gray", "distance", "slope"], default="gray")

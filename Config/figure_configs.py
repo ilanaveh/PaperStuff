@@ -6,6 +6,7 @@ alongside ATTENTION_MAP_CONFIGS.
 from copy import deepcopy
 from pathlib import Path
 from . import path_config as paths
+from . import graphics
 
 
 _ATTENTION_CURRENT = {
@@ -112,14 +113,14 @@ _ATTENTION_CURRENT = {
     "wasserstein_paired_color": "0.45",  # Gray mode and zero-slope lines.
     "wasserstein_paired_line_color_mode": "slope",  # gray / random / slope
     "wasserstein_paired_marker_color_mode": "slope",  # gray / distance (D1 vs D2) / slope
-    "wasserstein_paired_positive_color": "#D55E00",
-    "wasserstein_paired_negative_color": "#0072B2",
+    "wasserstein_paired_positive_color": graphics.wasser_colors["D2>D1"],
+    "wasserstein_paired_negative_color": graphics.wasser_colors["D2<D1"],
     "wasserstein_paired_d1_color": "#0072B2",
     "wasserstein_paired_d2_color": "#D55E00",
     "wasserstein_paired_negative_on_top": False,  # Draw negative-slope lines last.
     "wasserstein_paired_random_seed": 0,  # Reproducible random line colors.
     "wasserstein_paired_alpha": 0.08,  # Marker opacity (and fallback line opacity).
-    "wasserstein_paired_transparent_slopes": "all",  # all / positive / negative; other slopes opaque.
+    "wasserstein_paired_transparent_slopes": "all",  # all / positive / negative / none; other slopes opaque.
     "wasserstein_paired_line_alpha": None,  # Independent line opacity; None uses alpha.
     "wasserstein_paired_linewidth": 0.4,
     "wasserstein_paired_marker_size": 2,
@@ -134,10 +135,10 @@ _ATTENTION_CURRENT = {
     "wasserstein_histogram_bins": 15,
     "wasserstein_histogram_color": "0.45",
     "wasserstein_histogram_color_by_sign": True,
-    "wasserstein_histogram_positive_color": "#D55E00",
-    "wasserstein_histogram_negative_color": "#0072B2",
+    "wasserstein_histogram_positive_color": graphics.wasser_colors["D2>D1"],
+    "wasserstein_histogram_negative_color": graphics.wasser_colors["D2<D1"],
     "wasserstein_histogram_title": "",
-    "wasserstein_histogram_xlim_quantiles": None,  # (0.005, 0.995),  # None shows full range.
+    "wasserstein_histogram_xlim_quantiles": (0.005, 0.995),  # None shows full range.
     "wasserstein_histogram_y_offset_inches": 0.0,  # Relative to middle model-row center.
     "wasserstein_histogram_zero_linewidth": 1.3,
     "wasserstein_histogram_yticks": list(range(0, 101, 5)),

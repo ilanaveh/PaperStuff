@@ -153,6 +153,7 @@ opacity (`wasserstein_paired_alpha`); `None` uses the marker opacity. The defaul
 line opacity is 0.04. The standalone script accepts `--line-alpha`.
 
 `wasserstein_paired_transparent_slopes` selects `"all"` (default), `"positive"`,
-or `"negative"`. Selected pairs use the configured line/marker alpha; other pairs
+`"negative"`, or `"none"`. Selected pairs use the configured line/marker alpha; other pairs
 are fully opaque. Both endpoints follow their pair's slope. Zero slopes remain
-opaque in selective modes. The standalone flag is `--transparent-slopes`.
+opaque in selective modes. Use `"none"` for fully opaque lines and markers.
+The standalone flag is `--transparent-slopes`.
